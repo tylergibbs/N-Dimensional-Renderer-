@@ -1,0 +1,2 @@
+This is a project where I apply concepts from linear algebra to extend the a standard physics engine into n dimensional spaces. This can be ran either from runWireFrame.rkt or from gui.rkt. runWireFrame will generate an interactive word where you can rotate the camera and move the camera in n dimensional space while observing a tesseract wireframe. While gui will generate frames of the same image but with color using ray tracing.
+
