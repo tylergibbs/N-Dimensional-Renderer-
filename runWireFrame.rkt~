@@ -1,32 +1,27 @@
 #lang racket
 (require math/matrix)
-
-;adds two vectors
+;vector+
 (define (vec+ v ve)
   (map + v ve))
 
-;subtracts two vectors
+;vector-
 (define (vec- v ve)
   (map - v ve))
 
-;scales a vector by constant n
+;vector-scale
 (define (vec-scale ve n)
   (map (λ (x) (* n x)) ve))
 
 ;circ n avov -> v
-;Rotates a list of vectors around a circle
 (define (circ d n avov ac)
   (if (= 0 n) null
       (cons (vec-scale (vec- (vector-ref avov (remainder (add1 ac)4)) (vector-ref avov (remainder ac 4))) (if (= 1 n) (/ d 90) 1))
             (circ d (sub1 n) avov (add1 ac)))))
 ;(circ 90 1 (vector '(1 0)'(0 1)'(-1 0)'(0 -1))0)
 ;(circ 180 2 (vector '(1 0)'(0 1)'(-1 0)'(0 -1))0)
-
-;2 norm of a vector
 (define (vec-l vec)
   (sqrt (foldr (λ (x y) (+ (sqr x) y)) 0 vec)))
 
-;normalizes a vector
 (define (norm vec n)
   (let ((l (vec-l vec)))
     (map (λ (x) (* n (/ x l))) vec)))
@@ -34,7 +29,6 @@
 ;(norm '(0 0) 1) error
 
 ;circ-vec: d vec vec
-;Rotates a vector around a second vector
 (define (circ-vec d vec1 vec2)
   ;(if (positive? d)
    ;   (begin (print d)
@@ -56,7 +50,6 @@
 ;(circ-vec -270  (list 1 0) (list 0 1))
 ;(circ-vec -360 (list 1 0) (list 0 1))
 
-;gets vector perpendicular to vector
 (define (perp-line vec)
   (append (reverse (map * (take vec 2) '(1 -1)))
     (build-list (- (length vec)2) (λ (x) 0))))
@@ -71,12 +64,9 @@
     ((= (sub1 d) ac) (rot (sub1 x) d (add1 acc) (+ 2 acc)))
     (else (rot (sub1 x) d acc (add1 ac)))))
 
-;dot product
 (define (dot vec v)
   (apply + (apply append (map (λ (x) (map (λ (y) (* x y)) v))vec))))
 ;(dot '(3 3 2) '(2 2))
-
-;computes the inverse of a matrix
 (define (mat-inv mat)
   (local (
         (define a (first (first mat)))
@@ -89,7 +79,6 @@
           (list (* -1 (/ 1 det) c) (* (/ 1 det) a))))))
 ;(mat-inv (list (list 4 7)  (list 2 6)))
 
-;gets position of two values in a vector
 (define (select vec n m)
     (list (list-ref vec n) (list-ref vec m)))
 ;(select '(1 2 3)
@@ -99,7 +88,7 @@
 ;(select '(1 2 3)
 ;        '(1 2 3) 2)
 
-;finds a line progected onto a plane between or1 or2
+;finds a ling progected onto a playn between or1 or2
 (define (find-line-plane vec or1 or2 n m)
   (local (
           (define S (list (select or1 n m) (select or2 n m)))
@@ -151,15 +140,13 @@
 ;(find-line-plane '(1 1) '(1 1) '(-1 1) 0)
 ;(find-line-plane '(-2 2) '(1 1) '(-2 2) 0)
 ;(find-line-plane '(2 2) '(1 1) '(-2 2) 0)
-
-;projects vec onto plane defined by or1 or2
 (define (find-line vec or1 or2 n m)
   (local ((define B (list (select or1 n m) (select or2 n m)))
           (define V (vec+ (vec-scale (first B) (first vec)) (vec-scale (second B) (second vec))))
           )
     V))
 
-;rotates a vector within the defined plane
+
 (define (rotat vec or1 or2 deg x)
   (local((define-values (n m) (rot x (length or1) 0 1))
         (define-values (2d p2d) (find-line-plane vec or1 or2 n m)))
@@ -186,19 +173,15 @@
 (rotat '(0 0 1) '(0 1 0) '(0 0 1) 90 2)
 (rotat '(1 1 0) '(0 1 0) '(0 0 1) 90 2)
 |#
-
-;transforms a amtrix to a list
 (define (mat->list l alon)
   (if (null? alon) null (cons (take alon l) (mat->list l (drop alon l)))))
-
-;transforms the vector to a new basis 
 (define (find-line-axis vec alodir)
   (foldr (λ (x y z) (vec+ (vec-scale x y) z)) (make-list (length vec) 0) (mat->list (length alodir) (matrix->list  (matrix-inverse (list->matrix (length alodir) (length alodir) (apply append alodir))))) vec))
-;transforms the vector to a new basis inverse of alodir
+
 (define (find-line-axis-inv vec alodir)
   (foldr (λ (x y z) (vec+ (vec-scale x y) z)) (make-list (length vec) 0) alodir vec))
 
-;rotates a vector in basis alodir
+
 (define (sub-rotat vec alodir deg x)
   (local((define-values (n m) (rot x (length vec) 0 1))
          (define in-ax (find-line-axis vec alodir))
@@ -214,8 +197,10 @@
          )
     (find-line-axis-inv nd-circ alodir)))))
 
+(define (vector-rotate vec axis new-dir)
+  vec)
+
 ;alon alosn alon n
-;projects the camera vector
 (define (dim-1 cam-globe p c)
   (let* ((num-dim (length cam-globe))
          (to-line (append (make-list (sub1 num-dim) 0) (list (* -1 c))))
@@ -229,7 +214,6 @@
    ;       (map + (list (/ with 2) (/ high 2)) (d=2 vec cam))
     ;))
 
-;projects the camera point vecotr
 (define (dim-1-point cam-globe p to-line)
   (let* ((num-dim (length cam-globe))
          (vec (vec- to-line p))
@@ -237,7 +221,6 @@
          (proj (vec+ p (vec-scale vec n))))
     (take proj (sub1 num-dim))))
 
-;projects a line onto the camera
 (define (linne cam p1 p2 dist with high)
   (local ((define (d=2 vec svec cam)
              (cond
@@ -261,11 +244,9 @@
 (struct world(cam obj axis)#:transparent)
 (struct obj (c alop alodir vel agop)#:transparent)
 
-;accelerates an object in a direction
 (define (acc ob dir am)
   (obj (obj-c ob) (obj-alop ob) (obj-alodir ob) (vec+ (obj-vel ob) (vec-scale dir am)) (obj-agop ob)))
 
-;accelerates the world in a direction
 (define (acc-w wor ref der am bool)
   (let* ((ob (if (= ref 0) (world-cam wor) (first (drop (world-obj wor) (sub1 ref)))))
         (after (if (= ref 0) (world-obj wor) (rest (drop (world-obj wor) (sub1 ref)))))
@@ -283,12 +264,10 @@
 ;(rot 4 4 0 1)
 ;(rot 5 4 0 1)
 
-;gets the coordenents of d
 (define (cords d)
   (build-list d (λ (x) (build-list d (λ (y) (if (= x y) 1 0))))))
 ;(cords 3)
 
-;rotates an object along axis 
 (define (rotate-p ob o deg rel ax)
  (cond
    ((= 0 rel)
@@ -354,7 +333,6 @@
 ;(rotate-p (obj '(0 0 0) '((-10 -10)) '((1 0)(0 1)) '(1 0) '(0 0) null) 0 90 #f)
 ;(rotate-p (obj '(0 0 0) '((10 -10)) '((1 0)(0 1)) '(1 0) '(0 0) null) 0 90 #f)
 
-;rotates the camera along axis 
 (define (rotate-cam wor o deg rel)
   (let*((cc (obj-c (world-cam wor)))
        (cam (world-cam wor)))
@@ -412,22 +390,20 @@
      )))
 
 
-;rotates the world along axis
+
 (define (rotate-w wor x ref bool deg)
   (if (= ref 0) (rotate-cam wor x (* -1 deg) bool)
     (world (world-cam wor) (append (take (world-obj wor) (sub1 ref)) (cons (rotate-p (first (drop (world-obj wor) (sub1 ref))) x deg bool (world-axis wor)) (rest (drop (world-obj wor) (sub1 ref))))) (world-axis wor))
     ))
-;updates the object
+
 (define (change-o ob)
   (obj (map + (obj-c ob) (obj-vel ob)) (map (λ (x) (map + x (obj-vel ob))) (obj-alop ob)) (obj-alodir ob) (obj-vel ob) (obj-agop ob)))
-;updates the world
+
 (define (change-w wor)
   (world (change-o (world-cam wor)) (map change-o (world-obj wor)) (world-axis wor)))
 
 (define ref 0)
 (define rel 0)
-
-;handles key imputs 
 (define (move wor str)
   (cond
     ((equal? str "r") (begin (set! rel (remainder (add1 rel)3)) wor))
@@ -459,7 +435,6 @@
     ))
 
 ;wor->i
-;diplayes a line in the world
 (define (disp-line wor)
   (foldr (λ (a b) 
            (let ((p (obj-c (world-cam wor)))
@@ -490,7 +465,6 @@
 
 ;(struct obj (c alop alodir start-front vel agop)#:transparent)
 
-;runs world
 (big-bang (world (obj '(0 0 -2000 -2000) '() '((1 0 0 0)(0 1 0 0)(0 0 1 0)(0 0 0 1))  '(0 0 0 0) '())
            (list(obj '(0 0 550 550)'((2000 2000 2550 2550)
                                  (-2000 2000 2550 2550)

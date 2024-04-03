@@ -8,9 +8,6 @@
 (require "worldop.rkt")
 (require "opvec.rkt")
 (require "intface.rkt")
-
-
-;defines the object in the world to be rendered
 (define worl (world (cam-obj (l->mat '(0 0 0)) (matrix-identity 3))
                     (vector
                      (obj (ndpoly 
@@ -25,13 +22,10 @@
                            (reftri 1 3 5 (triarray 1 (vector (vector #"\0\177\0\177")))) (reftri 3 5 7 (triarray 1 (vector (vector #"\0\177\0\177"))))
                            )))
                      )))
-
-;new frame
 (define frame (new frame%
                    [label "Hyper_Space"]
                    [width 120]
                    [height 100]))
-;canvas to draw on
 (define cav%
   (class
         canvas%
@@ -53,5 +47,4 @@
               (lambda (canvas dc)
                 (send dc draw-bitmap (place-scene worl) 0 0))]))
 
-;generates frames
 (send frame show #t)
